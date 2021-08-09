@@ -6,6 +6,7 @@ import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -41,10 +42,9 @@ public class SecKillModel extends BaseModel {
     private String productTitle;
     @Column(columnDefinition = "varchar(100) comment '产品名称'")
     private String productName;
-
     @Column(columnDefinition = "timestamp(0) comment '批准时间'")
     private Date approveTime;
-    //
-    //private int seckillversion;
-
+    //@Version
+    @Column(columnDefinition = "bigint(20) comment '乐观锁'")
+    private Long version;
 }

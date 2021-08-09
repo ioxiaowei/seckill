@@ -7,6 +7,7 @@ import io.xiaowei.seckill.openfeign.ProductFeign;
 import io.xiaowei.seckill.req.SecKillProductReq;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -59,7 +60,7 @@ public class SecKillServiceImpl implements ISecKillService {
     }
 
     /**
-     * 简单锁
+     * Lock 程序锁
      *
      * @param id     秒杀ID
      * @param userId 用户ID
@@ -98,6 +99,13 @@ public class SecKillServiceImpl implements ISecKillService {
         return result;
     }
 
+    /**
+     * Lock AOP
+     *
+     * @param id     秒杀ID
+     * @param userId 用户ID
+     * @return
+     */
     @Override
     public HashMap<String, Object> procedureByLockAop(Long id, Long userId) {
         HashMap<String, Object> result = new HashMap<>();
@@ -124,6 +132,86 @@ public class SecKillServiceImpl implements ISecKillService {
         return result;
     }
 
+    /**
+     * 单实例秒杀（悲观锁）
+     *
+     * @param id
+     * @param userId
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public HashMap<String, Object> pessimisticLock(Long id, Long userId) {
+        HashMap<String, Object> result = new HashMap<>();
+        SecKillModel secKillModel = secKillJpa.findByIdAndState(id, 1);
+        if (Objects.isNull(secKillModel)) {
+            throw new RuntimeException("秒杀数据不存在");
+        }
+        /*库存*/
+        long secKillInventory = secKillModel.getSecKillInventory();
+        /*秒杀数量*/
+        Integer secKillNum = secKillModel.getSecKillNum();
+        secKillNum++;
+        if (secKillNum > secKillInventory) {
+            log.info(">>>>>卖光了,谢谢惠顾>>>>>");
+            result.put("flag", "fail");
+            result.put("data", "卖光了,谢谢惠顾");
+            return result;
+        }
+        secKillModel.setSecKillNum(secKillNum);
+        secKillJpa.saveAndFlush(secKillModel);
+        result.put("flag", "success");
+        result.put("data", "秒杀成功");
+        log.info(">>>>>秒杀成功>>>>>");
+        return result;
+    }
+
+    /**
+     * 单实例秒杀（乐观锁）
+     *
+     * @param id
+     * @param userId
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public HashMap<String, Object> optimisticLock(Long id, Long userId) {
+        HashMap<String, Object> result = new HashMap<>();
+        SecKillModel secKillModel = getSecKillModel(id);
+        if (Objects.isNull(secKillModel)) {
+            throw new RuntimeException("秒杀数据不存在");
+        }
+        /*库存*/
+        long secKillInventory = secKillModel.getSecKillInventory();
+        /*秒杀数量*/
+        Integer secKillNum = secKillModel.getSecKillNum();
+        secKillNum++;
+        if (secKillNum > secKillInventory) {
+            log.info(">>>>>卖光了,谢谢惠顾>>>>>");
+            result.put("flag", "fail");
+            result.put("data", "卖光了,谢谢惠顾");
+            return result;
+        }
+        secKillModel.setSecKillNum(secKillNum);
+        int res = secKillJpa.updateSecKillWithVersion(secKillModel.getId(), secKillModel.getSecKillNum(), secKillModel.getVersion());
+        if (res > 0) {
+            result.put("flag", "success");
+            result.put("data", "秒杀成功");
+            log.info(">>>>>秒杀成功>>>>>");
+        } else {
+            result.put("flag", "fail");
+            result.put("data", "秒杀失败");
+            log.info(">>>>>秒杀失败>>>>>");
+        }
+        return result;
+    }
+
+    /**
+     * 秒杀商品查询
+     *
+     * @param id id
+     * @return
+     */
     private SecKillModel getSecKillModel(Long id) {
         return secKillJpa.findById(id).orElse(null);
     }

@@ -33,4 +33,22 @@ public interface ISecKillService {
      * @return
      */
     HashMap<String, Object> procedureByLockAop(Long id, Long userId);
+
+    /**
+     * 单实例秒杀（悲观锁）
+     *
+     * @param id
+     * @param userId
+     * @return
+     */
+    HashMap<String, Object> pessimisticLock(Long id, Long userId);
+
+    /**
+     * 单实例秒杀（乐观锁）
+     *
+     * @param id
+     * @param userId
+     * @return
+     */
+    HashMap<String, Object> optimisticLock(Long id, Long userId);
 }
