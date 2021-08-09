@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="seckill-server" />
+        <module name="user-server" />
+        <module name="shop-server" />
+        <module name="merchant-server" />
+        <module name="seckill-common" />
+        <module name="product-server" />
+        <module name="product-type-server" />
+        <module name="eureka-server" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="eureka-server" target="1.8" />
+      <module name="merchant-server" target="1.8" />
+      <module name="product-server" target="1.8" />
+      <module name="product-type-server" target="1.8" />
+      <module name="seckill" target="1.8" />
+      <module name="seckill-common" target="1.8" />
+      <module name="seckill-server" target="1.8" />
+      <module name="server-application" target="1.8" />
+      <module name="server-business" target="1.8" />
+      <module name="shop-server" target="1.8" />
+      <module name="user-server" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

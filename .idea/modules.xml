@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/server-application/eureka-server/eureka-server.iml" filepath="$PROJECT_DIR$/server-application/eureka-server/eureka-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server-business/merchant-server/merchant-server.iml" filepath="$PROJECT_DIR$/server-business/merchant-server/merchant-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server-business/product-server/product-server.iml" filepath="$PROJECT_DIR$/server-business/product-server/product-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server-business/product-type-server/product-type-server.iml" filepath="$PROJECT_DIR$/server-business/product-type-server/product-type-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/seckill.iml" filepath="$PROJECT_DIR$/seckill.iml" />
+      <module fileurl="file://$PROJECT_DIR$/seckill-common/seckill-common.iml" filepath="$PROJECT_DIR$/seckill-common/seckill-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server-business/seckill-server/seckill-server.iml" filepath="$PROJECT_DIR$/server-business/seckill-server/seckill-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server-application/server-application.iml" filepath="$PROJECT_DIR$/server-application/server-application.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server-business/server-business.iml" filepath="$PROJECT_DIR$/server-business/server-business.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server-business/shop-server/shop-server.iml" filepath="$PROJECT_DIR$/server-business/shop-server/shop-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server-business/user-server/user-server.iml" filepath="$PROJECT_DIR$/server-business/user-server/user-server.iml" />
+    </modules>
+  </component>
+</project>
