@@ -88,4 +88,11 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>nexus-release</id>
+            <url>http://nexus.ioxiaowei.com:8081/repository/maven-hosted/</url>
+        </repository>
+    </distributionManagement>
+
 </project>

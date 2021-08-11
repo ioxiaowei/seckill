@@ -11,5 +11,9 @@
 
     <artifactId>shop-server</artifactId>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
 
 </project>

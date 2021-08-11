@@ -44,11 +44,4 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>xiaowei-hosted-maven</id>
-            <url>http://nexus.ioxiaowei.com:8081/repository/maven-hosted/</url>
-        </repository>
-    </distributionManagement>
-
 </project>
