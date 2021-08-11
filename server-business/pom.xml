@@ -14,6 +14,7 @@
     <artifactId>server-business</artifactId>
     <packaging>pom</packaging>
 
+
     <modules>
         <module>user-server</module>
         <module>merchant-server</module>
@@ -66,5 +67,61 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.9.1</version>
+                <executions>
+                    <execution>
+                        <id>timestamp-property</id>
+                        <goals>
+                            <goal>timestamp-property</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <name>current.time</name>
+                    <pattern>yyyy-MM-dd-HH-mm-ss</pattern>
+                    <timeZone>GMT+8</timeZone>
+                    <regex/>
+                    <source/>
+                    <value/>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.4.14</version>
+                <configuration>
+                    <!-- maven settings -->
+                    <serverId>xiaowei-harbor</serverId>
+                    <!--指定镜像名称 仓库/镜像名:标签-->
+                    <imageName>
+                        ${docker.repository}/${docker.registry.name}/${artifactId}
+                    </imageName>
+                    <registryUrl>${docker.repository}</registryUrl>
+                    <dockerDirectory>${basedir}</dockerDirectory>
+                    <!--覆盖相同标签镜像-->
+                    <forceTags>true</forceTags>
+                    <!-- 时间戳做镜像标签 -->
+                    <imageTags>
+                        <!--suppress UnresolvedMavenProperty -->
+                        <imageTag>${current.time}</imageTag>
+                    </imageTags>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.1.18.RELEASE</version>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- mvn package -Dmaven.test.skip=true docker:build -DpushImage -->
 
 </project>

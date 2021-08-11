@@ -23,6 +23,12 @@
         <spring-cloud.version>Greenwich.SR6</spring-cloud.version>
         <maven.compiler.target>8</maven.compiler.target>
         <maven.compiler.source>8</maven.compiler.source>
+        <!-- docker support 仓库名 -->
+        <docker.registry.name>seckill</docker.registry.name>
+        <!-- docker support 仓库地址 -->
+        <docker.repository>harbor.ioxiaowei.com:18010</docker.repository>
+        <!-- 镜像标签 -->
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
     </properties>
 
     <dependencies>
@@ -78,19 +84,6 @@
                     <target>1.8</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.1.18.RELEASE</version>
-                <executions>
-                    <execution>
-                        <id>repackage</id>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
