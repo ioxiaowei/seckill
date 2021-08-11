@@ -51,4 +51,14 @@ public interface ISecKillService {
      * @return
      */
     HashMap<String, Object> optimisticLock(Long id, Long userId);
+
+    /**
+     * 分布式锁（Redis）
+     *
+     * @param id
+     * @param userId
+     * @return
+     */
+    HashMap<String, Object> redisDistributedLock(Long id, Long userId);
+
 }

@@ -88,4 +88,16 @@ public class SecKillResource {
     public HashMap<String, Object> optimisticLock(@PathVariable(value = "id") Long id, @PathVariable(value = "userId") Long userId) {
         return iSecKillService.optimisticLock(id, userId);
     }
+
+    /**
+     * 分布式锁（Redis）
+     *
+     * @param id
+     * @param userId
+     * @return
+     */
+    @PostMapping("redis/lock/{id}/{userId}")
+    public HashMap<String, Object> redisDistributedLock(@PathVariable(value = "id") Long id, @PathVariable(value = "userId") Long userId) {
+        return iSecKillService.redisDistributedLock(id, userId);
+    }
 }

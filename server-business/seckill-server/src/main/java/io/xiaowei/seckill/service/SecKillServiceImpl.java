@@ -5,6 +5,7 @@ import io.xiaowei.model.SecKillModel;
 import io.xiaowei.seckill.jpa.SecKillJpa;
 import io.xiaowei.seckill.openfeign.ProductFeign;
 import io.xiaowei.seckill.req.SecKillProductReq;
+import io.xiaowei.seckill.utils.RedisLockKit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,9 @@ public class SecKillServiceImpl implements ISecKillService {
     private ProductFeign productFeign;
 
     private final Lock lock = new ReentrantLock();
+
+    @Resource
+    private RedisLockKit redisLockKit;
 
     @Override
     public String saveSecKillProduct(SecKillProductReq secKillProductReq) {
@@ -67,6 +71,7 @@ public class SecKillServiceImpl implements ISecKillService {
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public HashMap<String, Object> procedureByLock(Long id, Long userId) {
         HashMap<String, Object> result = new HashMap<>();
         lock.lock();
@@ -107,6 +112,7 @@ public class SecKillServiceImpl implements ISecKillService {
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public HashMap<String, Object> procedureByLockAop(Long id, Long userId) {
         HashMap<String, Object> result = new HashMap<>();
         SecKillModel secKillModel = getSecKillModel(id);
@@ -204,6 +210,71 @@ public class SecKillServiceImpl implements ISecKillService {
             log.info(">>>>>秒杀失败>>>>>");
         }
         return result;
+    }
+
+    /**
+     * 分布式锁（Redis）
+     *
+     * @param id     id
+     * @param userId userId
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public HashMap<String, Object> redisDistributedLock(Long id, Long userId) {
+        HashMap<String, Object> result = new HashMap<>();
+        boolean hasLock = redisLockKit.tryLock(id + "", 30);
+        log.info("### Redis锁获取结果:{} ###", hasLock);
+        if (hasLock) {
+            getSkillData(id, result);
+        } else {
+            boolean flag = false;
+            for (int i = 0; i < 3; i++) {
+                hasLock = redisLockKit.tryLock(id + "", 30);
+                if (hasLock) {
+                    getSkillData(id, result);
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) {
+                result.put("flag", "fail");
+                result.put("data", "太火爆了，请重新抢购");
+            }
+        }
+        redisLockKit.unlock(id + "");
+        return result;
+    }
+
+    private void getSkillData(Long id, HashMap<String, Object> result) {
+        SecKillModel secKillModel = getSecKillModel(id);
+        if (Objects.isNull(secKillModel)) {
+            throw new RuntimeException("秒杀数据不存在");
+        }
+        /*库存*/
+        long secKillInventory = secKillModel.getSecKillInventory();
+        /*秒杀数量*/
+        Integer secKillNum = secKillModel.getSecKillNum();
+        secKillNum++;
+        log.info("### 当前库存:{} --- 当前秒杀数量:{} ###", secKillInventory, secKillNum);
+        if (secKillNum > secKillInventory) {
+            log.info(">>>>>卖光了,谢谢惠顾>>>>>");
+            result.put("flag", "fail");
+            result.put("data", "卖光了,谢谢惠顾");
+            return;
+        }
+        secKillModel.setSecKillNum(secKillNum);
+        try {
+            secKillJpa.saveAndFlush(secKillModel);
+            result.put("flag", "success");
+            result.put("data", "秒杀成功");
+            log.info(">>>>>秒杀成功>>>>>");
+        } catch (Exception exception) {
+            result.put("flag", "fail");
+            result.put("data", "秒杀失败");
+            log.info(">>>>>秒杀失败>>>>>");
+        }
+
     }
 
     /**
