@@ -2,7 +2,9 @@ package io.xiaowei.seckill.service;
 
 import io.xiaowei.model.ProductModel;
 import io.xiaowei.model.SecKillModel;
+import io.xiaowei.model.SecKillResultModel;
 import io.xiaowei.seckill.jpa.SecKillJpa;
+import io.xiaowei.seckill.jpa.SecKillResultJpa;
 import io.xiaowei.seckill.openfeign.ProductFeign;
 import io.xiaowei.seckill.req.SecKillProductReq;
 import io.xiaowei.seckill.utils.RedisLockKit;
@@ -11,9 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -29,9 +30,16 @@ public class SecKillServiceImpl implements ISecKillService {
     private SecKillJpa secKillJpa;
 
     @Resource
+    private SecKillResultJpa secKillResultJpa;
+
+    @Resource
     private ProductFeign productFeign;
 
     private final Lock lock = new ReentrantLock();
+
+    private final Map<Long, Future> cacheSecKillResultMap = new HashMap<Long, Future>();
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Resource
     private RedisLockKit redisLockKit;
@@ -246,6 +254,69 @@ public class SecKillServiceImpl implements ISecKillService {
         return result;
     }
 
+    /**
+     * Future异步
+     *
+     * @param id
+     * @param userId
+     * @return
+     */
+    @Override
+    public void secKillFuture(Long id, Long userId) throws ExecutionException, InterruptedException {
+        Future<Integer> future = executorService.submit(new KillCallable(userId, id));
+        cacheSecKillResultMap.put(userId, future);
+    }
+
+
+    class KillCallable implements Callable<Integer> {
+
+        private Long userId;
+        private Long id;
+
+        public KillCallable(Long userId, Long id) {
+            this.userId = userId;
+            this.id = id;
+        }
+
+        @Override
+        public Integer call() throws Exception {
+            SecKillResultModel secKillResultModel = new SecKillResultModel();
+            SecKillModel secKillModel = getSecKillModel(id);
+            if (Objects.isNull(secKillModel)) {
+                throw new RuntimeException("秒杀数据不存在");
+            }
+            /*库存*/
+            long secKillInventory = secKillModel.getSecKillInventory();
+            /*秒杀数量*/
+            Integer secKillNum = secKillModel.getSecKillNum();
+            secKillNum++;
+            secKillResultModel.setProductId(secKillModel.getProductId());
+            secKillResultModel.setSecKillId(secKillModel.getId());
+            secKillResultModel.setUserId(userId);
+            secKillResultModel.setResult(0);
+            secKillResultModel.setResultData("用户" + userId + "秒杀成功！！");
+            secKillResultModel.setSecKillTime(new Date());
+            if (secKillNum > secKillInventory) {
+                log.info(">>>>>卖光了,谢谢惠顾>>>>>");
+                secKillResultModel.setResult(1);
+                secKillResultModel.setResultData("用户" + userId + "秒杀失败！！");
+            } else {
+                log.info(">>>>>秒杀成功:库存:{},当前第:{}个>>>>>", secKillInventory, secKillNum);
+                secKillModel.setSecKillNum(secKillNum);
+                secKillJpa.saveAndFlush(secKillModel);
+            }
+            secKillResultJpa.saveAndFlush(secKillResultModel);
+            return secKillResultModel.getResult();
+        }
+    }
+
+
+    /**
+     * redis锁重试查询
+     *
+     * @param id
+     * @param result
+     */
     private void getSkillData(Long id, HashMap<String, Object> result) {
         SecKillModel secKillModel = getSecKillModel(id);
         if (Objects.isNull(secKillModel)) {

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author wangxiaowei
@@ -99,5 +100,19 @@ public class SecKillResource {
     @PostMapping("redis/lock/{id}/{userId}")
     public HashMap<String, Object> redisDistributedLock(@PathVariable(value = "id") Long id, @PathVariable(value = "userId") Long userId) {
         return iSecKillService.redisDistributedLock(id, userId);
+    }
+
+
+    /**
+     * future
+     *
+     * @param id id
+     * @param userId userId
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    @PostMapping("/future/{id}/{userId}")
+    public void futureSkill(@PathVariable(value = "id") Long id, @PathVariable(value = "userId") Long userId) throws ExecutionException, InterruptedException {
+        iSecKillService.secKillFuture(id, userId);
     }
 }

@@ -5,6 +5,7 @@ import io.xiaowei.seckill.req.SecKillProductReq;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author wangxiaowei
@@ -60,5 +61,14 @@ public interface ISecKillService {
      * @return
      */
     HashMap<String, Object> redisDistributedLock(Long id, Long userId);
+
+    /**
+     * Future异步
+     *
+     * @param id
+     * @param userId
+     * @return
+     */
+    void secKillFuture(Long id, Long userId) throws ExecutionException, InterruptedException;
 
 }
