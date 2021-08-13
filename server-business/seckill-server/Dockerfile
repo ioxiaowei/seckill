@@ -6,6 +6,7 @@ ADD /target/*.jar /root/app.jar
 EXPOSE 8080
 ENV JAVA_OPTS="\
 -XX:+PrintGCDetails \
+-XX:+PrintHeapAtGC \
 -XX:+PrintTenuringDistribution \
 -XX:+PrintGCTimeStamps \
 -XX:+HeapDumpOnOutOfMemoryError \
